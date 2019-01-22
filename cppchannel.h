@@ -16,7 +16,7 @@
 template<class item>
 class CPPChannel {
 private:
-    std::list<unique_ptr<item>> queue;
+    std::list<std::unique_ptr<item>> queue;
     std::mutex m;
     std::condition_variable cv;
     bool closed;
@@ -31,14 +31,14 @@ public:
         std::unique_lock<std::mutex> lock(m);
         return closed;
     }
-    void put(unique_ptr<item> i) {
+    void put(std::unique_ptr<item> i) {
         std::unique_lock<std::mutex> lock(m);
         if(closed)
             throw std::logic_error("put to closed channel");
         queue.push_back(std::move(i));
         cv.notify_one();
     }
-    unique_ptr<item> get(bool &success, bool wait = true) {
+    std::unique_ptr<item> get(bool &success, bool wait = true) {
         std::unique_lock<std::mutex> lock(m);
         if(wait)
             cv.wait(lock, [&](){ return closed || !queue.empty(); });
